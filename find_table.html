@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Find Your Table</title>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      max-width: 500px;
+      margin: auto;
+      background-color: #f4f4f4;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-top: 20px;
+      box-sizing: border-box;
+    }
+    #autocomplete-list {
+      border: 1px solid #ccc;
+      border-top: none;
+      max-height: 150px;
+      overflow-y: auto;
+      position: absolute;
+      width: 100%;
+      background-color: white;
+      z-index: 10;
+    }
+    .autocomplete-item {
+      padding: 10px;
+      cursor: pointer;
+    }
+    .autocomplete-item:hover {
+      background-color: #e0e0e0;
+    }
+    #result {
+      margin-top: 30px;
+      font-size: 22px;
+      text-align: center;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h2>Enter Student Name</h2>
+  <div style="position: relative;">
+    <input type="text" id="searchInput" placeholder="e.g. Angus Smith" oninput="autocomplete()">
+    <div id="autocomplete-list"></div>
+  </div>
+  <div id="result"></div>
+
+  <script>
+    let data = [];
+
+    // Load JSON data from file (in the same directory)
+    fetch('students.json')
+      .then(response => response.json())
+      .then(jsonData => {
+        data = jsonData.reduce((acc, student) => {
+          acc[student["Student name"].toLowerCase()] = student["Table number"];
+          return acc;
+        }, {});
+      })
+      .catch(error => console.error('Error loading JSON:', error));
+
+    function autocomplete() {
+      const input = document.getElementById("searchInput");
+      const result = document.getElementById("result");
+      const list = document.getElementById("autocomplete-list");
+      const value = input.value.trim().toLowerCase();
+
+      list.innerHTML = "";
+      result.textContent = "";
+
+      if (!value) return;
+
+      const matches = Object.keys(data).filter(name => name.includes(value));
+
+      matches.forEach(name => {
+        const item = document.createElement("div");
+        item.textContent = name;
+        item.classList.add("autocomplete-item");
+        item.onclick = () => {
+          input.value = name;
+          list.innerHTML = "";
+          result.textContent = `Table Number: ${data[name]}`;
+        };
+        list.appendChild(item);
+      });
+
+      if (matches.length === 0) {
+        result.textContent = "Name not found.";
+      }
+    }
+  </script>
+</body>
+</html>
